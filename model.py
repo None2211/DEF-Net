@@ -332,7 +332,7 @@ class csunet(nn.Module):
         cswin = self.backbone(x)
 
         e1 = cswin[0]#64 48 48
-        e1  = 0.8 * e1 + 0.2*x1
+        e1  =  e1 +x1
         e1 = self.merge_1(e1)
         for block1 in self.multiway_1:
             block1.H = 56
@@ -343,7 +343,7 @@ class csunet(nn.Module):
 
 
         e2 = cswin[1]#128 24 24
-        e2 = 0.8 *e2 + 0.2 *x2
+        e2 = e2 + x2
         e2 = self.merge_2(e2)
         for block2 in self.multiway_2:
             block2.H = 28
@@ -353,7 +353,7 @@ class csunet(nn.Module):
         e2 = self.re_norm_2(e2)
 
         e3 = cswin[2]#256 12 12
-        e3 = 0.8 *e3 + 0.2 *x3
+        e3 = e3 + x3
         e3 = self.merge_3(e3)
         for block3 in self.multiway_3:
             block3.H = 14
@@ -363,7 +363,7 @@ class csunet(nn.Module):
         e3 = self.re_norm_3(e3)
 
         e4 = cswin[3]#512 6  6
-        e4 = 0.8 *e4 + 0.2 *x4
+        e4 = e4 + x4
         e4 = self.merge_4(e4)
         for block4 in self.multiway_4:
             block4.H = 7
