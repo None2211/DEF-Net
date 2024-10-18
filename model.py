@@ -39,9 +39,9 @@ class eca_layer(nn.Module):
 
 
 
-class decoderbox(nn.Module):#n,c,h,w -> n,c/2,2h,2w
+class SCA(nn.Module):#n,c,h,w -> n,c/2,2h,2w
     def __init__(self,in_planes,out_planes):
-        super(decoderbox,self).__init__()
+        super(SCA,self).__init__()
         #b,c,h,w -> b,c/4,h,w
         self.eca = eca_layer(channel=in_planes)
         self.act = nn.GELU()
@@ -84,9 +84,9 @@ class decoderbox(nn.Module):#n,c,h,w -> n,c/2,2h,2w
 
         return x
 
-class lastconv(nn.Module):
+class SCSI(nn.Module):
     def __init__(self, in_planes, out_planes):
-        super(lastconv, self).__init__()
+        super(SCSI, self).__init__()
         # down
         self.act = nn.GELU()
         self.finalconv = nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
@@ -262,8 +262,8 @@ class csunet(nn.Module):
         self.backbone.load_state_dict(model_dict)
         self.mix = nn.Parameter(torch.FloatTensor(7))
         self.mix.data.fill_(1)
-        self.midconv = lastconv(512,512)
-        self.multiway_4 = nn.ModuleList(
+        self.SCSI = SCSI(512,512)
+        self.MIL_4 = nn.ModuleList(
             [CSWinBlock(dim=512, num_heads=heads[3], patches_resolution=224 // 32, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[-1], drop=drop_rate,
                         attn_drop=attn_drop_rate, drop_path=dpr[np.sum(depth[:-1]) + i], norm_layer=norm_layer)
@@ -271,7 +271,7 @@ class csunet(nn.Module):
         self.norm4 = nn.LayerNorm(512)
         self.merge_4 = MergeBlock(dim=512)
         self.re_norm_4 = Rshape_Norm(curr_dim=512, H_W_size=7)
-        self.multiway_3 = nn.ModuleList(
+        self.MIL_3 = nn.ModuleList(
             [CSWinBlock(dim=256, num_heads=heads[2], patches_resolution=224 // 16, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[2], drop=drop_rate,
                         attn_drop=attn_drop_rate, drop_path=dpr[np.sum(depth[:2]) + i], norm_layer=norm_layer)
@@ -279,7 +279,7 @@ class csunet(nn.Module):
         self.merge_3 = MergeBlock(dim=256)
         self.norm3 = nn.LayerNorm(256)
         self.re_norm_3 = Rshape_Norm(curr_dim=256, H_W_size=14)
-        self.multiway_2 = nn.ModuleList(
+        self.MIL_2 = nn.ModuleList(
             [CSWinBlock(dim=128, num_heads=heads[1], patches_resolution=224 // 8, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[1], drop=drop_rate,
                         attn_drop=attn_drop_rate, drop_path=dpr[np.sum(depth[:1]) + i], norm_layer=norm_layer)
@@ -288,7 +288,7 @@ class csunet(nn.Module):
         self.norm2 = nn.LayerNorm(128)
         self.re_norm_2 = Rshape_Norm(curr_dim=128, H_W_size=28)
 
-        self.multiway_1 = nn.ModuleList(
+        self.MIL_1 = nn.ModuleList(
             [CSWinBlock(dim=64, num_heads=heads[0], patches_resolution=224 // 4, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[0], drop=drop_rate,
                         attn_drop=attn_drop_rate, drop_path=dpr[i], norm_layer=norm_layer)
@@ -298,10 +298,10 @@ class csunet(nn.Module):
         self.re_norm_1 = Rshape_Norm(curr_dim=64, H_W_size=56)
 
 
-        self.up5 = decoderbox(512,256)
-        self.up4 = decoderbox(256,128)
-        self.up3 = decoderbox(128,64)
-        self.up2 = decoderbox(64,1)
+        self.up5 = SCA(512,256)
+        self.up4 = SCA(256,128)
+        self.up3 = SCA(128,64)
+        self.up2 = SCA(64,1)
         self.upconv5 = double_conv(256,256)
         self.upconv4 = double_conv(128,128)
         self.upconv3 = double_conv(64,64)
@@ -334,7 +334,7 @@ class csunet(nn.Module):
         e1 = cswin[0]#64 48 48
         e1  =  e1 +x1
         e1 = self.merge_1(e1)
-        for block1 in self.multiway_1:
+        for block1 in self.MIL_1:
             block1.H = 56
             block1.W = 56
             cs_out1 = block1(e1)
@@ -345,7 +345,7 @@ class csunet(nn.Module):
         e2 = cswin[1]#128 24 24
         e2 = e2 + x2
         e2 = self.merge_2(e2)
-        for block2 in self.multiway_2:
+        for block2 in self.MIL_2:
             block2.H = 28
             block2.W = 28
             cs_out2 = block2(e2)
@@ -355,7 +355,7 @@ class csunet(nn.Module):
         e3 = cswin[2]#256 12 12
         e3 = e3 + x3
         e3 = self.merge_3(e3)
-        for block3 in self.multiway_3:
+        for block3 in self.MIL_3:
             block3.H = 14
             block3.W = 14
             cs_out3 = block3(e3)
@@ -365,7 +365,7 @@ class csunet(nn.Module):
         e4 = cswin[3]#512 6  6
         e4 = e4 + x4
         e4 = self.merge_4(e4)
-        for block4 in self.multiway_4:
+        for block4 in self.MIL_4:
             block4.H = 7
             block4.W = 7
             cs_out4 = block4(e4)
@@ -374,7 +374,7 @@ class csunet(nn.Module):
 
 
 
-        e5 = self.midconv(e4)#512,3,3
+        e5 = self.SCSI(e4)#512,3,3
         #up
         up5 = self.up5(e5) #256
         up5 = up5 + e3
