@@ -226,11 +226,11 @@ class Rshape_Norm(nn.Module):
         return x
 
 
-class csunet(nn.Module):
+class DEF-Net(nn.Module):
     def __init__(self,num_channels,num_class,num_cls,num_heads=[2,2,4,8],depth=[1,1,1,1],mlp_ratio=4.,
                  qkv_bias=False,qk_scale=None,attn_drop_rate=0.,split_size=[1,2,7,7],drop_rate=0.
                  ,drop_path_rate=0.1,norm_layer=nn.LayerNorm):
-        super(csunet, self).__init__()
+        super(DEF-Net, self).__init__()
 
         self.backbone = cswin_small()
         heads = num_heads# [64, 128, 256, 512]
