@@ -39,7 +39,7 @@ class eca_layer(nn.Module):
 
 
 
-class SCA(nn.Module):#n,c,h,w -> n,c/2,2h,2w
+class ECAD(nn.Module):#n,c,h,w -> n,c/2,2h,2w
     def __init__(self,in_planes,out_planes):
         super(SCA,self).__init__()
         #b,c,h,w -> b,c/4,h,w
@@ -84,7 +84,7 @@ class SCA(nn.Module):#n,c,h,w -> n,c/2,2h,2w
 
         return x
 
-class SCSI(nn.Module):
+class SGCA(nn.Module):
     def __init__(self, in_planes, out_planes):
         super(SCSI, self).__init__()
         # down
@@ -262,7 +262,7 @@ class DEF-Net(nn.Module):
         self.backbone.load_state_dict(model_dict)
         self.mix = nn.Parameter(torch.FloatTensor(7))
         self.mix.data.fill_(1)
-        self.SCSI = SCSI(512,512)
+        self.SGCA = SGCA(512,512)
         self.MIL_4 = nn.ModuleList(
             [CSWinBlock(dim=512, num_heads=heads[3], patches_resolution=224 // 32, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[-1], drop=drop_rate,
@@ -298,10 +298,10 @@ class DEF-Net(nn.Module):
         self.re_norm_1 = Rshape_Norm(curr_dim=64, H_W_size=56)
 
 
-        self.up5 = SCA(512,256)
-        self.up4 = SCA(256,128)
-        self.up3 = SCA(128,64)
-        self.up2 = SCA(64,1)
+        self.up5 = ECAD(512,256)
+        self.up4 = ECAD(256,128)
+        self.up3 = ECAD(128,64)
+        self.up2 = ECAD(64,1)
         self.upconv5 = double_conv(256,256)
         self.upconv4 = double_conv(128,128)
         self.upconv3 = double_conv(64,64)
@@ -374,7 +374,7 @@ class DEF-Net(nn.Module):
 
 
 
-        e5 = self.SCSI(e4)#512,3,3
+        e5 = self.SGCA(e4)#512,3,3
         #up
         up5 = self.up5(e5) #256
         up5 = up5 + e3
