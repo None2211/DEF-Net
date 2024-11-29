@@ -262,7 +262,7 @@ class DEF-Net(nn.Module):
         self.backbone.load_state_dict(model_dict)
         self.mix = nn.Parameter(torch.FloatTensor(7))
         self.mix.data.fill_(1)
-        self.SGCA = SGCA(512,512)
+        self.SCGA = SGCA(512,512)
         self.MIL_4 = nn.ModuleList(
             [CSWinBlock(dim=512, num_heads=heads[3], patches_resolution=224 // 32, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[-1], drop=drop_rate,
@@ -374,7 +374,7 @@ class DEF-Net(nn.Module):
 
 
 
-        e5 = self.SGCA(e4)#512,3,3
+        e5 = self.SCGA(e4)#512,3,3
         #up
         up5 = self.up5(e5) #256
         up5 = up5 + e3
