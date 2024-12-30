@@ -4,4 +4,4 @@ This repository contains the implementation of our paper "DEF-Net: Dual Encoder 
 
 ## Usage
 
-1. Clone the repository, and download the pre-trained ImaenNet model, put them into ./ folder. The details of the training are in train.py file.
+1. Clone the repository, and download the pre-trained [CSWin_small_224](https://github.com) model, put them into ./ folder. The details of the training are in train.py file.
