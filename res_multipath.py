@@ -40,9 +40,9 @@ class eca_layer(nn.Module):
 
 
 
-class decoderbox(nn.Module):#n,c,h,w -> n,c/2,2h,2w
+class ECAD(nn.Module):#n,c,h,w -> n,c/2,2h,2w
     def __init__(self,in_planes,out_planes):
-        super(decoderbox,self).__init__()
+        super(ECAD,self).__init__()
         #b,c,h,w -> b,c/4,h,w
         self.eca = eca_layer(channel=in_planes)
         self.act = nn.GELU()
@@ -85,9 +85,9 @@ class decoderbox(nn.Module):#n,c,h,w -> n,c/2,2h,2w
 
         return x
 
-class lastconv(nn.Module):
+class SCSI(nn.Module):
     def __init__(self, in_planes, out_planes):
-        super(lastconv, self).__init__()
+        super(SCSI, self).__init__()
         # down
         self.act = nn.GELU()
         self.finalconv = nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
@@ -227,7 +227,7 @@ class Rshape_Norm(nn.Module):
         return x
 
 
-class csunet(nn.Module):
+class DEF-Net(nn.Module):
     def __init__(self,num_channels,num_class,num_cls,num_heads=[2,2,4,8],depth=[1,1,1,1],mlp_ratio=4.,
                  qkv_bias=False,qk_scale=None,attn_drop_rate=0.,split_size=[1,2,7,7],drop_rate=0.
                  ,drop_path_rate=0.1,norm_layer=nn.LayerNorm):
@@ -264,7 +264,7 @@ class csunet(nn.Module):
         self.backbone.load_state_dict(model_dict)
         self.mix = nn.Parameter(torch.FloatTensor(7))
         self.mix.data.fill_(1)
-        self.midconv = lastconv(512,512)
+        self.midconv = SCSI(512,512)
         self.multiway_4 = nn.ModuleList(
             [CSWinBlock(dim=512, num_heads=heads[3], patches_resolution=224 // 32, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[-1], drop=drop_rate,
@@ -300,10 +300,10 @@ class csunet(nn.Module):
         self.re_norm_1 = Rshape_Norm(curr_dim=64, H_W_size=56)
 
 
-        self.up5 = decoderbox(512,256)
-        self.up4 = decoderbox(256,128)
-        self.up3 = decoderbox(128,64)
-        self.up2 = decoderbox(64,1)
+        self.up5 = ECAD(512,256)
+        self.up4 = ECAD(256,128)
+        self.up3 = ECAD(128,64)
+        self.up2 = ECAD(64,1)
         self.upconv5 = double_conv(256,256)
         self.upconv4 = double_conv(128,128)
         self.upconv3 = double_conv(64,64)
@@ -412,22 +412,3 @@ class csunet(nn.Module):
 
         return  logit
 
-if __name__ == "__main__":
-    from thop import profile
-    input = torch.randn(8, 3, 224, 224)
-    superpixel = torch.randn(8, 3, 224, 224)
-    model = csunet(num_channels=3,num_class=1,num_cls=3)
-    #model.cuda()
-    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Total number of parameters: {total_params}")
-    flops, params = profile(model, inputs=(input,superpixel))
-
-    print(f"FLOPs: {flops}")
-
-
-
-
-    for name,param in model.named_parameters():
-        if param.requires_grad:
-            print(name)
-    output = model(input,superpixel)# 8*64*1*1
