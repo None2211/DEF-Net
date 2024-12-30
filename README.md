@@ -10,6 +10,7 @@ This repository contains the implementation of our paper "DEF-Net: Dual Encoder 
 
 ## Dataset
 You can download the dataset from the official [ISIC](https://challenge.isic-archive.com/data/) website.
+All datasets are organized and used for training, validation, and testing strictly following the official splits.
 
 ## Quick Inference
 ### Download the pre-trained model from [[Google Drive](https://drive.google.com/file/d/180JsahYjJkhnHEXbPHpet5BKo9pS7Bm0/view?usp=drive_link)]
