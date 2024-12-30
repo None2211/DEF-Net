@@ -9,7 +9,7 @@ This repository contains the implementation of our paper "DEF-Net: Dual Encoder 
 3. Once the training is complete, you can run the test.py to test your model. Run the code : python test.py
 
 ## Dataset
-
+You can download the dataset from the official [ISIC](https://challenge.isic-archive.com/data/) website.
 
 ## Quick Inference
 ### Download the pre-trained model from [[Google Drive](https://drive.google.com/file/d/180JsahYjJkhnHEXbPHpet5BKo9pS7Bm0/view?usp=drive_link)]
