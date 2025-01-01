@@ -85,9 +85,9 @@ class ECAD(nn.Module):#n,c,h,w -> n,c/2,2h,2w
 
         return x
 
-class SCSI(nn.Module):
+class SCGA(nn.Module):
     def __init__(self, in_planes, out_planes):
-        super(SCSI, self).__init__()
+        super(SCGA, self).__init__()
         # down
         self.act = nn.GELU()
         self.finalconv = nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False)
@@ -264,7 +264,7 @@ class DEF-Net(nn.Module):
         self.backbone.load_state_dict(model_dict)
         self.mix = nn.Parameter(torch.FloatTensor(7))
         self.mix.data.fill_(1)
-        self.midconv = SCSI(512,512)
+        self.midconv = SCGA(512,512)
         self.multiway_4 = nn.ModuleList(
             [CSWinBlock(dim=512, num_heads=heads[3], patches_resolution=224 // 32, mlp_ratio=mlp_ratio
                         , qkv_bias=True, qk_scale=None, split_size=split_size[-1], drop=drop_rate,
